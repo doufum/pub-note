@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>洛阳三日游行程规划</title>
+    <link rel="stylesheet" href="https://lf3-cdn-tos.bytecdntp.com/cdn/expire-1-M/tailwindcss/2.2.19/tailwind.min.css">
+    <link rel="stylesheet" href="https://lf6-cdn-tos.bytecdntp.com/cdn/expire-100-M/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <style>
+        :root {
+            --primary: #4a6fa5;
+            --secondary: #e74c3c;
+            --accent: #f39c12;
+            --light: #f8f9fa;
+            --dark: #343a40;
+        }
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4edf5 100%);
+            color: #333;
+        }
+        h1, h2, h3 {
+            font-family: 'Noto Serif SC', serif;
+            font-weight: 700;
+        }
+        .hero {
+            background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('https://images.unsplash.com/photo-1600804340584-c7db2eacf0bf?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80');
+            background-size: cover;
+            background-position: center;
+        }
+        .card {
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+            background: white;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        .timeline-item {
+            position: relative;
+            padding-left: 30px;
+            margin-bottom: 30px;
+        }
+        .timeline-item:before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 8px;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--accent);
+        }
+        .map-container {
+            height: 400px;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .weather-card {
+            background: linear-gradient(135deg, #6a93cb 0%, #a4bfef 100%);
+            color: white;
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-gray-50">
+    <!-- Hero 区域 -->
+    <header class="hero text-white py-20 px-4 text-center">
+        <h1 class="text-4xl md:text-5xl font-bold mb-4">洛阳三日文化之旅</h1>
+        <p class="text-xl mb-6">2025年5月31日 - 6月2日 | 历史与美食的完美融合</p>
+        <div class="inline-flex items-center bg-white/20 backdrop-blur-sm py-2 px-6 rounded-full">
+            <i class="fas fa-user mr-2"></i>
+            <span>旅行者：@小叶子</span>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 py-8 max-w-6xl">
+        <!-- 天气概览 -->
+        <section class="mb-12">
+            <h2 class="text-3xl font-bold mb-6 flex items-center">
+                <i class="fas fa-cloud-sun mr-3 text-blue-500"></i>
+                天气情况
+            </h2>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="weather-card card p-5 text-center">
+                    <h3 class="text-lg font-bold">5月31日</h3>
+                    <p class="text-4xl my-3"><i class="fas fa-cloud-rain"></i></p>
+                    <p>小雨 23°C/21°C</p>
+                </div>
+                <div class="weather-card card p-5 text-center">
+                    <h3 class="text-lg font-bold">6月1日</h3>
+                    <p class="text-4xl my-3"><i class="fas fa-cloud-rain"></i></p>
+                    <p>小雨 24°C/18°C</p>
+                </div>
+                <div class="weather-card card p-5 text-center">
+                    <h3 class="text-lg font-bold">6月2日</h3>
+                    <p class="text-4xl my-3"><i class="fas fa-cloud"></i></p>
+                    <p>阴 34°C/21°C</p>
+                </div>
+                <div class="bg-gradient-to-r from-amber-400 to-orange-500 card p-5 text-center">
+                    <h3 class="text-lg font-bold">旅行贴士</h3>
+                    <p class="text-4xl my-3"><i class="fas fa-umbrella"></i></p>
+                    <p>携带雨具，注意防晒</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 行程地图 -->
+        <section class="mb-12">
+            <h2 class="text-3xl font-bold mb-6 flex items-center">
+                <i class="fas fa-map-marked-alt mr-3 text-green-500"></i>
+                景点地图
+            </h2>
+            <div id="map" class="map-container"></div>
+        </section>
+
+        <!-- 详细行程 -->
+        <section class="mb-12">
+            <h2 class="text-3xl font-bold mb-6 flex items-center">
+                <i class="fas fa-route mr-3 text-purple-500"></i>
+                详细行程
+            </h2>
+            
+            <!-- 第一天 -->
+            <div class="card p-6 mb-8">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-2xl font-bold text-blue-600">第一天 · 5月31日</h3>
+                    <span class="bg-blue-100 text-blue-800 py-1 px-3 rounded-full">文化探索</span>
+                </div>
+                
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <h4 class="font-bold text-lg">09:00 抵达洛阳火车站</h4>
+                        <p>乘坐火车到达洛阳，开启旅程</p>
+                        <a href="iosamap://navi?sourceApplication=旅游行程&poiname=洛阳火车站&lat=34.684378&lon=112.435697&dev=0"
+                           class="text-blue-500 mt-2 inline-block">
+                            <i class="fas fa-location-dot"></i> 导航到火车站
+                        </a>
+                    </div>
+                    
+                    <div class="timeline-item">
+                        <h4 class="font-bold text-lg">09:30 前往酒店办理入住</h4>
+                        <p>维也纳酒店（洛阳师范学院玉泉新零售街店）</p>
+                        <p class="text-gray-600">地址：玉泉街与立雪路交汇处西南角</p>
+                        <a href="iosamap://navi?sourceApplication=旅游行程&poiname=维也纳酒店&lat=34.628434&lon=112.601200&dev=0"
+                           class="text-blue-500 mt-2 inline-block">
+                            <i class="fas fa-hotel"></i> 导航到酒店
+                        </a>
+                    </div>
+                    
+                    <div class="timeline-item">
+                        <h4 class="font-bold text-lg">13:30 龙门石窟游览</h4>
+                        <p>世界文化遗产，中国四大石窟之一</p>
+                        <p class="text-amber-600">门票：90元 | 建议游览：3-4小时</p>
+                        <a href="iosamap://navi?sourceApplication=旅游行程&poiname=龙门石窟&lat=34.569385&lon=112.488326&dev=0"
+                           class="text-blue-500 mt-2 inline-block">
+                            <i class="fas fa-university"></i> 导航到龙门石窟
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 第二天 -->
+            <div class="card p-6 mb-8">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-2xl font-bold text-green-600">第二天 · 6月1日</h3>
+                    <span class="bg-green-100 text-green-800 py-1 px-3 rounded-full">历史之旅</span>
+                </div>
+                
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <h4 class="font-bold text-lg">09:00 白马寺</h4>
+                        <p>中国第一古刹，佛教传入中国后第一座官办寺院</p>
+                        <p class="text-amber-600">门票：35元 | 建议游览：2-3小时</p>
+                        <a href="iosamap://navi?sourceApplication=旅游行程&poiname=白马寺&lat=34.721828&lon=112.605311&dev=0"
+                           class="text-blue-500 mt-2 inline-block">
+                            <i class="fas fa-place-of-worship"></i> 导航到白马寺
+                        </a>
+                    </div>
+                    
+                    <div class="timeline-item">
+                        <h4 class="font-bold text-lg">14:00 洛阳博物馆</h4>
+                        <p>了解洛阳十三朝古都的历史文化</p>
+                        <p class="text-gray-600">免费开放 | 周一闭馆</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 第三天 -->
+            <div class="card p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-2xl font-bold text-red-600">第三天 · 6月2日</h3>
+                    <span class="bg-red-100 text-red-800 py-1 px-3 rounded-full">古城漫步</span>
+                </div>
+                
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <h4 class="font-bold text-lg">09:00 关林景区</h4>
+                        <p>关羽首级埋葬之地，中国唯一的"林、庙、冢"合祀古建</p>
+                        <p class="text-amber-600">门票：40元</p>
+                    </div>
+                    
+                    <div class="timeline-item">
+                        <h4 class="font-bold text-lg">14:00 丽景门</h4>
+                        <p>"不到丽景门，枉来洛阳城"，古城文化街区</p>
+                        <p class="text-gray-600">免费开放 | 购物美食推荐</p>
+                    </div>
+                    
+                    <div class="timeline-item">
+                        <h4 class="font-bold text-lg">17:00 前往火车站</h4>
+                        <p>乘坐18:00火车返回重庆</p>
+                        <p class="text-red-500">建议提前1小时到达车站</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- 住宿与餐饮 -->
+        <section class="mb-12">
+            <h2 class="text-3xl font-bold mb-6 flex items-center">
+                <i class="fas fa-utensils mr-3 text-amber-500"></i>
+                住宿与餐饮
+            </h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="card p-6">
+                    <h3 class="text-2xl font-bold mb-4 text-blue-600">
+                        <i class="fas fa-hotel mr-2"></i>维也纳酒店
+                    </h3>
+                    <p class="mb-3">地址：玉泉街与立雪路交汇处西南角玉泉新零售街</p>
+                    <p class="mb-3">联系电话：0379-XXXXXXX</p>
+                    <p class="mb-3">入住：5月31日 12:00 | 退房：6月2日 12:00</p>
+                    <div class="flex mt-4">
+                        <span class="bg-blue-100 text-blue-800 py-1 px-3 rounded-full mr-2">免费WiFi</span>
+                        <span class="bg-blue-100 text-blue-800 py-1 px-3 rounded-full mr-2">停车场</span>
+                        <span class="bg-blue-100 text-blue-800 py-1 px-3 rounded-full">24小时前台</span>
+                    </div>
+                </div>
+                
+                <div class="card p-6">
+                    <h3 class="text-2xl font-bold mb-4 text-amber-600">
+                        <i class="fas fa-utensils mr-2"></i>美食推荐
+                    </h3>
+                    <ul class="space-y-3">
+                        <li class="flex items-start">
+                            <i class="fas fa-circle text-amber-500 mt-1.5 mr-2 text-xs"></i>
+                            <div>
+                                <strong>洛阳水席</strong> - 真不同饭店（老字号）
+                                <p class="text-gray-600">人均：60-100元</p>
+                            </div>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-circle text-amber-500 mt-1.5 mr-2 text-xs"></i>
+                            <div>
+                                <strong>牛肉汤</strong> - 南关小碗牛肉汤
+                                <p class="text-gray-600">早餐推荐，人均15元</p>
+                            </div>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-circle text-amber-500 mt-1.5 mr-2 text-xs"></i>
+                            <div>
+                                <strong>牡丹燕菜</strong> - 特色宫廷菜
+                                <p class="text-gray-600">必尝洛阳特色</p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+        
+        <!-- 实用信息 -->
+        <section class="mb-12">
+            <h2 class="text-3xl font-bold mb-6 flex items-center">
+                <i class="fas fa-info-circle mr-3 text-purple-500"></i>
+                实用信息
+            </h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold mb-3 text-purple-600">
+                        <i class="fas fa-phone-alt mr-2"></i>紧急联系方式
+                    </h3>
+                    <ul class="space-y-2">
+                        <li>报警：110</li>
+                        <li>急救：120</li>
+                        <li>旅游投诉：0379-XXXXXXX</li>
+                    </ul>
+                </div>
+                
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold mb-3 text-green-600">
+                        <i class="fas fa-wallet mr-2"></i>预算参考
+                    </h3>
+                    <ul class="space-y-2">
+                        <li>住宿：300元/晚 × 2 = 600元</li>
+                        <li>餐饮：100元/天 × 3 = 300元</li>
+                        <li>门票：约200元</li>
+                        <li>交通：约150元</li>
+                        <li class="font-bold">总计：约1250元</li>
+                    </ul>
+                </div>
+                
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold mb-3 text-red-600">
+                        <i class="fas fa-suitcase mr-2"></i>行李建议
+                    </h3>
+                    <ul class="space-y-2">
+                        <li>雨具（雨伞/雨衣）</li>
+                        <li>舒适步行鞋</li>
+                        <li>防晒用品</li>
+                        <li>充电宝</li>
+                        <li>常用药品</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bg-gray-800 text-white py-8 text-center">
+        <p class="mb-2">© 2025 洛阳旅游行程规划</p>
+        <p class="text-gray-400">祝您旅途愉快！</p>
+    </footer>
+
+    <script>
+        // 初始化地图
+        const map = L.map('map').setView([34.62, 112.45], 11);
+        
+        // 添加地图图层
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+        
+        // 添加景点标记
+        const locations = [
+            {name: "洛阳火车站", coords: [34.684378, 112.435697], icon: "fa-train"},
+            {name: "维也纳酒店", coords: [34.628434, 112.601200], icon: "fa-hotel"},
+            {name: "龙门石窟", coords: [34.569385, 112.488326], icon: "fa-landmark"},
+            {name: "白马寺", coords: [34.721828, 112.605311], icon: "fa-place-of-worship"},
+            {name: "丽景门", coords: [34.6678, 112.4712], icon: "fa-monument"}
+        ];
+        
+        locations.forEach(loc => {
+            const icon = L.divIcon({
+                html: `<div class="bg-white rounded-full p-2 shadow-lg">
+                         <i class="fas ${loc.icon} text-blue-600 text-xl"></i>
+                       </div>`,
+                className: '',
+                iconSize: [40, 40]
+            });
+            
+            const marker = L.marker(loc.coords, {icon: icon}).addTo(map);
+            marker.bindPopup(`<b>${loc.name}</b>`).openPopup();
+        });
+    </script>
+</body>
+</html>
